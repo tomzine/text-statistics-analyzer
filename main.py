@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from analyzer import load_text,normalize_words, calculate_statistics
+from analyzer import load_text,normalize_words, calculate_statistics, count_word_occurrences
 
 
 
