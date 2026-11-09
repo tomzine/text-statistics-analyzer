@@ -1,6 +1,6 @@
 import pytest
 
-from analyzer import load_text,normalize_words, calculate_statistics
+from analyzer import load_text,normalize_words, calculate_statistics, count_word_occurrences
 
 
 def test_normalize_words():
@@ -58,3 +58,28 @@ def test_load_text(tmp_path):
     result = load_text(file_path)
 
     assert result == "Hello Python"
+
+
+
+def test_count_word_occurrences():
+    words = ["python", "is", "amazing", "python"]
+
+    assert count_word_occurrences(words, "python") == 2
+
+
+def test_search_case_insensitive():
+    words = ["python", "python"]
+
+    assert count_word_occurrences(words, "Python") == 2
+
+
+def test_search_word_not_found():
+    words = ["python", "is", "amazing"]
+
+    assert count_word_occurrences(words, "java") == 0
+
+
+def test_search_with_spaces_and_punctuation():
+    words = ["python", "python"]
+
+    assert count_word_occurrences(words, " Python! ") == 2
