@@ -1,0 +1,44 @@
+
+name: Python CI
+
+# Run automatically when code is pushed
+# or when a PR targets main.
+
+on:
+  push:
+
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run Python Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Download project files
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # Step 2: Install Python
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      # Step 3: Install uv
+      - name: Install uv
+        uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e
+        with:
+          enable-cache: true
+
+      # Step 4: Install dependencies
+      - name: Install dependencies
+        run: uv sync --locked
+
+      # Step 5: Execute automated tests
+      - name: Run pytest
+        run: uv run --locked pytest -v
