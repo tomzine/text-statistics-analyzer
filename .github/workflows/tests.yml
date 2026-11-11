@@ -41,4 +41,4 @@ jobs:
 
       # Step 5: Execute automated tests
       - name: Run pytest
-        run: uv run --locked pytest -v
+        run: uv run python -m pytest -v 
