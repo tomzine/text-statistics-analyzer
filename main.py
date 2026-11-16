@@ -33,6 +33,16 @@ def display_statistics(results):
     print("==============================")
 
 
+search_term = input("\nEnter a word to search (press Enter to skip): ")
+
+if search_term.strip():
+    frequency = count_word_occurrences(words, search_term)
+
+    if frequency:
+        print(f"The word '{search_term}' appears {frequency} times.")
+    else:
+        print("Word not found!")
+
 
 def main():
     """ Run the application """

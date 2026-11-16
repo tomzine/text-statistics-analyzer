@@ -1,19 +1,28 @@
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
 # Virtual environment
 .venv/
+venv/
+
+# Database files - do not upload student records
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Backups
+*_backup.db
+
+# Environment variables and secrets
 .env
 .env.*
 
-# Python cache
-__pycache__/
-*.py[cod]
-
-# Testing
-.pytest_cache/
-.coverage
-
-# IDE
-.vs/
-
-# Build
-dist/
+# Build files
 build/
+dist/
