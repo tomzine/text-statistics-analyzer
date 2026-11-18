@@ -80,7 +80,7 @@ def get_class(
 
     school_class = db.get(SchoolClass, class_id)
 
-    if school_classis is None:
+    if school_class is None:
         raise HTTPException(
             status_code=404,
             detail="Class not found"

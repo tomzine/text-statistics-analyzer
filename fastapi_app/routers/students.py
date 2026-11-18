@@ -1,16 +1,24 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from fastapi import (
+    APIRouter,
+    Depends, 
+    HTTPException,
+    Query
+)
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session, selectinload
+
+from typing import Literal
 
 from .courses import Course, CourseResponse
 
 from ..database import get_db
-from ..models import StudentDB, SchoolClass
+from ..models import StudentDB, SchoolClass, Course
 from ..schemas import (
     StudentCreate,
     StudentUpdate,
     StudentResponse,
     StudentWithDetailsResponse,
+    StudentPageResponse,
     MessageResponse
 )
 
@@ -93,6 +101,125 @@ def get_student_with_details(
     return students
 
 
+# ADVANCED SEARCH ENDPOINT
+@router.get(
+    "/search",
+    response_model=StudentPageResponse
+)
+def search_students(
+
+    # Search by name
+    search: str | None = None,
+
+    # Age filters
+    min_age: int | None = Query(default=None, ge=0),
+    max_age: int | None = Query(default=None, ge=0),
+
+    # Relatiohnship filters
+    school_class_id: int | None= Query(default=None, ge=1),
+    course_id : int | None = Query(default=None, ge =1),
+
+    # Sorting
+    sort_by: Literal["id", "name", "age", "grade"] = "id",
+    descending: bool = False,
+
+    #Pagination
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1, le=100),
+
+    db: Session = Depends(get_db)
+):
+
+    # 1. Validate age range
+    if (
+        min_age is not None
+        and max_age is not None
+        and min_age>max_age
+    ):
+        raise HTTPException(
+            status_code=422,
+            detail="min_age cannot be greater than max_age"
+        )
+    
+    # 2. Build filters
+    conditions = []
+
+    if search and search.strip():
+        conditions.append(
+            StudentDB.name.ilike(f"%{search.strip()}%")
+        )   
+
+    if min_age is not None:
+        conditions.append(
+            StudentDB.age >= min_age
+        )    
+
+    if max_age is not None:
+        conditions.append(
+            StudentDB.age <= max_age
+        ) 
+
+    if school_class_id is not None:
+        conditions.append(
+            StudentDB.school_class_id == school_class_id
+        )
+
+    if course_id is not None:
+        conditions.append(
+            StudentDB.courses.any(Course.id == course_id)
+        )
+
+    # 3. Count matching students
+    count_statement = (
+        select(func.count(StudentDB.id))
+        .where(*conditions)
+    )
+
+    total = db.scalar(count_statement) or 0
+
+    # 4. Build SELECT query
+    statement = (
+        select(StudentDB)
+        .where(*conditions)
+    )
+
+    # 5. select sorting column safely
+    sort_columns = {
+        "id": StudentDB.id,
+        "name": StudentDB.name,
+        "age": StudentDB.age,
+        "grade": StudentDB.grade
+    }
+
+    sort_column = sort_columns[sort_by]
+
+    if descending:
+        statement = statement.order_by(sort_column.desc())
+    else:
+        statement = statement.order_by(sort_column.asc())
+
+    # 6. Calcuate pagination offset
+    offset_value = (page - 1) * page_size
+
+    # 7. Apply pagination
+    statement = statement.offset(
+        offset_value
+    ).limit(page_size)
+
+    # 8. Execute query
+    students = db.scalars(statement).all()
+
+    # 9. Calculate total pages
+    total_pages = (total + page_size -1) // page_size
+
+    # 10. Return structured response
+    return {
+        "items": students,
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages
+    }
 # 3. GET ONE STUDENT
 @router.get(
     "/{student_id}",

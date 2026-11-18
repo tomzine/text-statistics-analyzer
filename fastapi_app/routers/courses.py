@@ -8,6 +8,7 @@ from ..schemas import (
     CourseCreate,
     CourseResponse,
     StudentResponse,
+    StudentCreate,
     MessageResponse
 )
 
@@ -50,6 +51,55 @@ def create_course(
     db.refresh(new_course)
 
     return new_course
+
+
+@router.post(
+    "/{course_id}/students",
+    response_model=StudentResponse,
+    status_code=201
+)
+def create_student_in_course(
+    course_id: int,
+    data: StudentCreate,
+    db: Session = Depends(get_db)
+):
+
+    # 1. Find the course
+    course = db.get(Course, course_id)
+
+    if course is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Course not found"
+        )
+    
+    try:
+        #2. Create student
+        new_student = StudentDB(
+            **data.model_dump()
+        )
+
+        # 3.Add student to session
+        db.add(new_student)
+
+        # 4. Flush to generate student ID
+        db.flush()
+
+        # 5. Enroll student in course
+        new_student.courses.append(course)
+
+        # 6. Commit all changes together
+        db.commit()
+
+    except Exception:
+        #7. Cancel uncommitted changes if something fails
+        db.rollback()
+        raise
+
+    # 8. Refresh student
+    db.refresh(new_student)
+
+    return new_student
 
 # 2. GET ALL COURSES
 @router.get(

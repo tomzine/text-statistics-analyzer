@@ -28,6 +28,22 @@ class StudentResponse(BaseModel):
     school_class_id: int | None = None
 
 
+# Schema for returning a student throught pagination
+class StudentPageResponse(BaseModel):
+
+    items: list[StudentResponse]
+    
+    #How many student in total
+    total: int
+
+    # Whcih page it is displaying
+    page: int
+
+    # How many students are displayed per page
+    page_size: int
+
+    # How many page are availabale
+    total_pages: int
 
 # Schema for simple messages
 class MessageResponse(BaseModel):
