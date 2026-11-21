@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 # Schema for creating a student
@@ -7,6 +7,7 @@ class StudentCreate(BaseModel):
     age: int
     grade: str
     school_class_id: int | None = None
+    email: EmailStr | None = None
 
 
 # Schema for partially updating a student
@@ -15,6 +16,7 @@ class StudentUpdate(BaseModel):
     age : int | None = None
     grade:str | None = None
     school_class_id: int | None = None
+    email: EmailStr | None = None
 
 
 # Schema for returning a student
@@ -25,7 +27,8 @@ class StudentResponse(BaseModel):
     name : str
     age : int
     grade : str
-    school_class_id: int | None = None
+    school_class_id: int | None 
+    email: EmailStr | None 
 
 
 # Schema for returning a student throught pagination
@@ -84,3 +87,28 @@ class StudentWithDetailsResponse(BaseModel):
 
     school_class: SchoolClassResponse | None
     courses: list[CourseResponse]
+
+# Schema for creating users
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str = Field(
+        min_length=8,
+        max_length=128
+    )
+
+
+# Schema for user response
+class UserResponse(BaseModel):
+
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: int
+    email: EmailStr
+    is_active: bool
+
+
+# Schema for token response
+class Token(BaseModel):
+
+    access_token: str
+    token_type: str

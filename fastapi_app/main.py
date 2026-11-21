@@ -6,6 +6,7 @@ from . import models
 from .routers.students import router as students_router
 from .routers.classes import router as classes_router
 from .routers.courses import router as courses_router
+from .routers.auth import router as auth_router
 
 
 # Create databse tables
@@ -24,3 +25,4 @@ app = FastAPI(
 app.include_router(students_router)
 app.include_router(classes_router)
 app.include_router(courses_router)
+app.include_router(auth_router)

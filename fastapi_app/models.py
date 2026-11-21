@@ -2,7 +2,8 @@ from sqlalchemy import (
     String,
     ForeignKey,
     Table,
-    Column
+    Column,
+    UniqueConstraint
 )
 from sqlalchemy.orm import (
     Mapped, 
@@ -56,6 +57,12 @@ class SchoolClass(Base):
 # 2. CHILD MODEL : STUDENT
 class StudentDB(Base):
     __tablename__ = "students"
+    __table_args__ = (
+    UniqueConstraint(
+        "email",
+        name="uq_students_email"
+    ),
+)
 
     id: Mapped[int] = mapped_column(
         primary_key=True,
@@ -84,6 +91,11 @@ class StudentDB(Base):
         back_populates="students"
     )
 
+    email: Mapped[str | None] = mapped_column(
+    String(150),
+    nullable=True
+    )
+
 
 # COURSE MODEL
 class Course(Base):
@@ -103,4 +115,41 @@ class Course(Base):
     students : Mapped[list["StudentDB"]] = relationship(
         secondary=student_courses,
         back_populates="courses"
+    )
+
+
+# USER MODEL
+class UserDB(Base):
+
+    __tablename__ = "users"
+
+    # Unique identifier
+    id: Mapped[int] = mapped_column(
+        primary_key=True
+    )
+
+    # user login identifier
+    email: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False
+    )
+
+    # Password hash
+    hashed_password : Mapped[str] = mapped_column(
+        String(255),
+        nullable=False
+    )
+
+    # Account status
+    is_active: Mapped[bool] = mapped_column(
+        default=True,
+        nullable=False
+    )
+
+    # Unique email constraint
+    __table_args__ = (
+        UniqueConstraint(
+            "email",
+            name="uq_users_email"
+        ),
     )
