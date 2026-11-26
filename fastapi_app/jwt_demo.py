@@ -1,7 +1,7 @@
 import os
 import jwt
 
-from security import create_access_token
+from .security import create_access_token
 
 #GENERATING THE TOKEN
 # User information

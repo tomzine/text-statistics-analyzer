@@ -5,14 +5,19 @@ from fastapi import (
     Query
 )
 from sqlalchemy import select, func
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, selectinload, joinedload
 
 from typing import Literal
 
 from .courses import Course, CourseResponse
 
 from ..database import get_db
-from ..models import StudentDB, SchoolClass, Course
+from ..models import (
+    StudentDB,
+    SchoolClass,
+    Course,
+    UserDB
+)
 from ..schemas import (
     StudentCreate,
     StudentUpdate,
@@ -21,6 +26,7 @@ from ..schemas import (
     StudentPageResponse,
     MessageResponse
 )
+from ..security import get_current_user, require_admin
 
 
 # Create router
@@ -65,12 +71,14 @@ def create_student(
 
 #  2. GET ALL STUDENTS
 @router.get(
-    "",
-    response_model=list[StudentResponse]
+    "/",
+    response_model=list[StudentResponse],
+    dependencies=[Depends(get_current_user)]
 )
 def get_students(
     db: Session = Depends(get_db)
 ):
+
 
     students = db.scalars(
         select(StudentDB)
@@ -273,11 +281,12 @@ def update_student(
 # 5. DELETE STUDENT
 @router.delete(
     "/{student_id}",
-    response_model=MessageResponse
+    response_model=MessageResponse,
+    dependencies=[Depends(require_admin)]
 )
 def delete_student(
     student_id: int,
-    db: Session =Depends(get_db)
+    db: Session = Depends(get_db)
 ):
 
     student = db.get(StudentDB, student_id)

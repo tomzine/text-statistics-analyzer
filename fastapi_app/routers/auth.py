@@ -17,7 +17,8 @@ from ..schemas import UserCreate, UserResponse, Token
 from ..security import (
     get_password_hash,
     verify_password,
-    create_access_token
+    create_access_token,
+    get_current_user
 )
 
 
@@ -25,6 +26,17 @@ router = APIRouter(
     prefix="/auth",
     tags=["Authentication"]
 )
+
+# The endpoint that return the aythenticated user's information
+@router.get(
+        "/me",
+        response_model=UserResponse
+)
+def get_my_profile(
+    current_user: UserDB = Depends(get_current_user)
+):
+    return current_user
+
 
 @router.post(
     "/register",

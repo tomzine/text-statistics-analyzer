@@ -146,6 +146,13 @@ class UserDB(Base):
         nullable=False
     )
 
+    # User role
+    role: Mapped[str] = mapped_column(
+        String(20),
+        default="teacher",
+        nullable=False
+    )
+
     # Unique email constraint
     __table_args__ = (
         UniqueConstraint(
